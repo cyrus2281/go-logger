@@ -16,29 +16,43 @@ const (
 )
 
 type logger struct {
-	level           int
-	outputWriter    io.Writer
-	errOutputWriter io.Writer
-	prefix          string
-	errPrefix       string
+	level                int
+	outputWriter         io.Writer
+	errOutputWriter      io.Writer
+	prefixFormatter      func(level int) string
+	errorPrefixFormatter func(level int) string
 }
 
-// getPrefix gets the message prefix based on the log level
-func (l *logger) getPrefix(level int) string {
+// defaultPrefixFormatter is the default prefix formatter
+func (l *logger) defaultPrefixFormatter(level int) string {
 	switch level {
 	case DEBUG:
-		return l.prefix + "DEBUG: "
+		return "[DEBUG] "
 	case INFO:
-		return l.prefix + ""
+		return ""
 	case WARNING:
-		return l.prefix + "WARNING: "
+		return "[WARNING] "
 	case ERROR:
-		return l.errPrefix + "ERROR: "
+		return "[ERROR] "
 	case FATAL:
-		return l.errPrefix + "ERROR: "
+		return "[ERROR] "
 	default:
-		return l.prefix + ""
+		return ""
 	}
+}
+
+// getPrefix gets the message with the prefix based on the log level
+func (l *logger) getPrefix(level int) string {
+	if level >= ERROR {
+		if l.errorPrefixFormatter == nil {
+			return l.defaultPrefixFormatter(level)
+		}
+		return l.errorPrefixFormatter(level)
+	}
+	if l.prefixFormatter == nil {
+		return l.defaultPrefixFormatter(level)
+	}
+	return l.prefixFormatter(level)
 }
 
 // log logs the message with the specified level and line ending option
@@ -66,20 +80,20 @@ func (l *logger) log(level int, ln bool, message ...any) {
 	}
 }
 
-// SetPrefix sets the prefix for the log message
-func (l *logger) SetPrefix(prefix string) {
-	l.prefix = prefix
+// SetPrefixFormatter sets the prefix formatter for the log message
+func (l *logger) SetPrefixFormatter(prefixFormatter func(level int) string) {
+	l.prefixFormatter = prefixFormatter
 }
 
-// SetErrorPrefix sets the prefix for the error log message
-func (l *logger) SetErrorPrefix(prefix string) {
-	l.errPrefix = prefix
+// SetErrorPrefixFormatter sets the prefix formatter for the error log message
+func (l *logger) SetErrorPrefixFormatter(errorPrefixFormatter func(level int) string) {
+	l.errorPrefixFormatter = errorPrefixFormatter
 }
 
-// SetPrefixes sets the prefixes for the log message and the error log message
-func (l *logger) SetPrefixes(prefix string, errPrefix string) {
-	l.prefix = prefix
-	l.errPrefix = errPrefix
+// SetPrefixFormatters sets the prefix formatters for the log message and the error log message
+func (l *logger) SetPrefixFormatters(prefixFormatter func(level int) string, errorPrefixFormatter func(level int) string) {
+	l.prefixFormatter = prefixFormatter
+	l.errorPrefixFormatter = errorPrefixFormatter
 }
 
 // SetLogLevel sets the log level

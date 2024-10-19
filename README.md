@@ -1,5 +1,11 @@
 # Go Logger Package
 
+[![GitHub Tag](https://img.shields.io/github/v/tag/cyrus2281/go-logger?label=Version)](https://pkg.go.dev/github.com/cyrus2281/go-logger)
+[![License](https://img.shields.io/github/license/cyrus2281/go-logger)](https://github.com/cyrus2281/go-logger/blob/main/LICENSE)
+[![buyMeACoffee](https://img.shields.io/badge/BuyMeACoffee-cyrus2281-yellow?logo=buymeacoffee)](https://www.buymeacoffee.com/cyrus2281)
+[![GitHub issues](https://img.shields.io/github/issues/cyrus2281/go-logger?color=red)](https://github.com/cyrus2281/go-logger/issues)
+[![GitHub stars](https://img.shields.io/github/stars/cyrus2281/go-logger?style=social)](https://github.com/cyrus2281/go-logger/stargazers)
+
 - [Go Logger Package](#go-logger-package)
   - [Features](#features)
   - [Installation](#installation)
@@ -39,7 +45,7 @@ go get github.com/cyrus2281/go-logger
 ### Using the Default Logger
 
 The default logger writes to `os.Stdout` and `os.Stderr` and has the log level set to `INFO`.
-All of which can be customized using the `SetOutputWriters`, `SetLogLevel`, `SetPrefix`, and `SetErrorPrefix` methods.
+All of which can be customized using the `SetOutputWriters`, `SetLogLevel`, and `SetPrefixFormatters` methods.
 
 
 ```go
@@ -85,8 +91,13 @@ func main() {
 You can set prefixes for standard log messages and error messages:
 
 ```go
-log.SetPrefix("[App Log] ")
-log.SetErrorPrefix("[Error] ")
+func formatter(level int) string {
+    currentDate := time.Now().Format("2006-01-02")
+	return fmt.Sprintf("[%s] [%d] ", currentDate, level)
+}
+
+log.SetPrefixFormatter(formatter)
+log.SetErrorPrefixFormatter(formatter)
 
 log.Infoln("Application started")
 log.Errorln("Failed to connect to database")

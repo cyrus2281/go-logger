@@ -12,19 +12,19 @@ func init() {
 	loggerInstance = NewLogger(INFO, os.Stdout, os.Stderr)
 }
 
-// SetPrefix sets the prefix for the log message
-func SetPrefix(prefix string) {
-	loggerInstance.SetPrefix(prefix)
+// SetPrefixFormatter sets the prefix formatter for the log message
+func SetPrefixFormatter(prefixFormatter func(level int) string) {
+	loggerInstance.SetPrefixFormatter(prefixFormatter)
 }
 
-// SetErrorPrefix sets the prefix for the error log message
-func SetErrorPrefix(prefix string) {
-	loggerInstance.SetErrorPrefix(prefix)
+// SetErrorPrefixFormatter sets the prefix for the error log message
+func SetErrorPrefixFormatter(errorPrefixFormatter func(level int) string) {
+	loggerInstance.SetErrorPrefixFormatter(errorPrefixFormatter)
 }
 
-// SetPrefixes sets the prefixes for the log message and the error log message
-func SetPrefixes(prefix string, errPrefix string) {
-	loggerInstance.SetPrefixes(prefix, errPrefix)
+// SetPrefixFormatters sets the prefix formatters for the log message and the error log message
+func SetPrefixFormatters(prefixFormatter func(level int) string, errorPrefixFormatter func(level int) string) {
+	loggerInstance.SetPrefixFormatters(prefixFormatter, errorPrefixFormatter)
 }
 
 // SetLogLevel sets the log level

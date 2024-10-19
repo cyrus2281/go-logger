@@ -8,38 +8,45 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestLogger_SetPrefix(t *testing.T) {
+func formatter(level int) string {
+	return "[TEST] "
+}
+
+func errorFormatter(level int) string {
+	return "[ERROR TEST] "
+}
+
+func TestLogger_SetPrefixFormatter(t *testing.T) {
 	var buf bytes.Buffer
 	log := NewLogger(DEBUG, &buf, &buf)
 
-	log.SetPrefix("[TEST] ")
+	log.SetPrefixFormatter(formatter)
 	log.Debugln("Debug message")
 
-	expected := "[TEST] DEBUG: Debug message\n"
+	expected := "[TEST] Debug message\n"
 	assert.Equal(t, expected, buf.String(), "The output should match the expected debug message with prefix.")
 }
 
-func TestLogger_SetErrorPrefix(t *testing.T) {
+func TestLogger_SetErrorPrefixFormatter(t *testing.T) {
 	var buf bytes.Buffer
 	log := NewLogger(DEBUG, &buf, &buf)
 
-	log.SetErrorPrefix("[ERROR TEST] ")
+	log.SetErrorPrefixFormatter(errorFormatter)
 	log.Errorln("Error message")
 
-	expected := "[ERROR TEST] ERROR: Error message\n"
+	expected := "[ERROR TEST] Error message\n"
 	assert.Equal(t, expected, buf.String(), "The output should match the expected error message with error prefix.")
 }
 
-func TestLogger_SetPrefixes(t *testing.T) {
+func TestLogger_SetPrefixFormatters(t *testing.T) {
 	var buf bytes.Buffer
 	log := NewLogger(DEBUG, &buf, &buf)
 
-	log.SetPrefixes("[LOG] ", "[ERR_LOG] ")
+	log.SetPrefixFormatters(formatter, errorFormatter)
 	log.Warningln("Warning message")
 	log.Errorln("Error message")
 
-	expected := "[LOG] WARNING: Warning message\n[ERR_LOG] ERROR: Error message\n"
-	println(buf.String())
+	expected := "[TEST] Warning message\n[ERROR TEST] Error message\n"
 	assert.Equal(t, expected, buf.String(), "The output should match the expected log and error prefixes.")
 }
 
@@ -51,7 +58,7 @@ func TestLogger_SetLogLevel(t *testing.T) {
 	log.Warningln("Warning message") // Should log
 	log.Errorln("Error message")     // Should log
 
-	expected := "WARNING: Warning message\nERROR: Error message\n"
+	expected := "[WARNING] Warning message\n[ERROR] Error message\n"
 	assert.Equal(t, expected, buf.String(), "The output should only include warning and error messages.")
 }
 
@@ -60,7 +67,7 @@ func TestLogger_DebugLevelLogging(t *testing.T) {
 	log := NewLogger(DEBUG, &buf, &buf)
 
 	log.Debugln("Debug message")
-	expected := "DEBUG: Debug message\n"
+	expected := "[DEBUG] Debug message\n"
 
 	assert.Equal(t, expected, buf.String(), "The output should match the expected debug message.")
 }
@@ -80,7 +87,7 @@ func TestLogger_WarningLevelLogging(t *testing.T) {
 	log := NewLogger(WARNING, &buf, &buf)
 
 	log.Warningln("Warning message")
-	expected := "WARNING: Warning message\n"
+	expected := "[WARNING] Warning message\n"
 
 	assert.Equal(t, expected, buf.String(), "The output should match the expected warning message.")
 }
@@ -90,7 +97,7 @@ func TestLogger_ErrorLevelLogging(t *testing.T) {
 	log := NewLogger(ERROR, &buf, &buf)
 
 	log.Errorln("Error message")
-	expected := "ERROR: Error message\n"
+	expected := "[ERROR] Error message\n"
 
 	assert.Equal(t, expected, buf.String(), "The output should match the expected error message.")
 }
@@ -105,7 +112,7 @@ func TestLogger_SetOutputWriters(t *testing.T) {
 	log.Errorln("Error message")
 
 	assert.Equal(t, "Info message\n", outBuf.String(), "Info message should be logged to the standard output.")
-	assert.Equal(t, "ERROR: Error message\n", errBuf.String(), "Error message should be logged to the error output.")
+	assert.Equal(t, "[ERROR] Error message\n", errBuf.String(), "Error message should be logged to the error output.")
 }
 
 func TestLogger_SetOutputWriter(t *testing.T) {
@@ -125,7 +132,7 @@ func TestLogger_SetErrorOutputWriter(t *testing.T) {
 	log.SetErrorOutputWriter(&errBuf)
 	log.Errorln("Error message")
 
-	assert.Equal(t, "ERROR: Error message\n", errBuf.String(), "Error message should be logged to the error output.")
+	assert.Equal(t, "[ERROR] Error message\n", errBuf.String(), "Error message should be logged to the error output.")
 }
 
 func TestLogger_DebugF(t *testing.T) {
@@ -133,7 +140,7 @@ func TestLogger_DebugF(t *testing.T) {
 	log := NewLogger(DEBUG, &buf, &buf)
 
 	log.DebugF("Debug formatted message: %d", 42)
-	expected := "DEBUG: Debug formatted message: 42"
+	expected := "[DEBUG] Debug formatted message: 42"
 
 	assert.Equal(t, expected, buf.String(), "The output should match the expected formatted debug message.")
 }
@@ -153,7 +160,7 @@ func TestLogger_WarningF(t *testing.T) {
 	log := NewLogger(WARNING, &buf, &buf)
 
 	log.WarningF("Warning formatted message: %d", 42)
-	expected := "WARNING: Warning formatted message: 42"
+	expected := "[WARNING] Warning formatted message: 42"
 
 	assert.Equal(t, expected, buf.String(), "The output should match the expected formatted warning message.")
 }
@@ -163,7 +170,7 @@ func TestLogger_ErrorF(t *testing.T) {
 	log := NewLogger(ERROR, &buf, &buf)
 
 	log.ErrorF("Error formatted message: %d", 42)
-	expected := "ERROR: Error formatted message: 42"
+	expected := "[ERROR] Error formatted message: 42"
 
 	assert.Equal(t, expected, buf.String(), "The output should match the expected formatted error message.")
 }
@@ -175,7 +182,7 @@ func TestLogger_CheckError(t *testing.T) {
 	err := errors.New("some error")
 	log.CheckError(err)
 
-	expected := "ERROR: some error"
+	expected := "[ERROR] some error"
 	assert.Equal(t, expected, buf.String(), "The output should match the expected error message.")
 }
 
@@ -200,7 +207,7 @@ func TestLogger_CheckErrorln(t *testing.T) {
 	err := errors.New("some error")
 	log.CheckErrorln(err)
 
-	expected := "ERROR: some error\n"
+	expected := "[ERROR] some error\n"
 	assert.Equal(t, expected, buf.String(), "The output should match the expected error message with newline.")
 }
 
@@ -224,6 +231,6 @@ func TestLogger_CheckErrorF(t *testing.T) {
 	err := errors.New("some error")
 	log.CheckErrorF(err, "Error occurred: %s", "file not found")
 
-	expected := "ERROR: Error occurred: file not foundsome error"
+	expected := "[ERROR] Error occurred: file not foundsome error"
 	assert.Equal(t, expected, buf.String(), "The output should match the expected formatted error message.")
 }
